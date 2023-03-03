@@ -1,5 +1,3 @@
-
-
 namespace hw1_2
 {
     class Program
@@ -40,24 +38,25 @@ namespace hw1_2
             string enteredTransformedString = Console.ReadLine(); //warning fixes if I use var instead of string,
             //but after there is a checkout if string is empty
             while (string.IsNullOrWhiteSpace(enteredTransformedString) || enteredTransformedString.Length == 1)
+
             {
                 Console.WriteLine("Error! You entered empty or too small string");
-                Console.Write("Enter string which you want to transform again: ");
+                Console.Write("Enter string which you want to retransform again: ");
                 enteredTransformedString = Console.ReadLine();
             }
 
             Console.Write("Enter position (counts from 1) of the last letter in Burrows-Wheeler-transformed string: ");
-            int indexOfLastLetterInEnteredTransformedString = Convert.ToInt32(Console.ReadLine());
-            while (indexOfLastLetterInEnteredTransformedString > enteredTransformedString.Length ||
-                   indexOfLastLetterInEnteredTransformedString < 0)
+            int positionOfLastLetterInEnteredTransformedString = Convert.ToInt32(Console.ReadLine());
+            while (positionOfLastLetterInEnteredTransformedString > enteredTransformedString.Length ||
+                   positionOfLastLetterInEnteredTransformedString < 1)
             {
                 Console.WriteLine("Error! You entered wrong position");
                 Console.Write("Enter again: ");
-                indexOfLastLetterInEnteredTransformedString = Convert.ToInt32(Console.ReadLine());
+                positionOfLastLetterInEnteredTransformedString = Convert.ToInt32(Console.ReadLine());
             }
 
             string restoredString =
-                BurrowsWheelerRetransform(enteredTransformedString, indexOfLastLetterInEnteredTransformedString);
+                BurrowsWheelerRetransform(enteredTransformedString, positionOfLastLetterInEnteredTransformedString);
             Console.WriteLine($"Original string: {restoredString}\n");
             return;
         }
@@ -133,7 +132,6 @@ namespace hw1_2
         {
             int originalStringLength = originalString.Length;
             (string, char)[] arrayOfSuffixes = new (string, char)[originalStringLength];
-            arrayOfSuffixes[0] = (originalString, originalString[0]);
             string currentSuffix = "";
 
             for (int i = 0; i < originalStringLength; i++)
@@ -186,7 +184,7 @@ namespace hw1_2
             return -1;
         }
 
-        static string BurrowsWheelerRetransform(string transformedString, int endIndexOfOriginalInTransformedString)
+        static string BurrowsWheelerRetransform(string transformedString, int endPositionOfOriginalInTransformedString)
         {
             int transformedStringLenght = transformedString.Length;
             string sortedTransformedString = "";
@@ -223,11 +221,11 @@ namespace hw1_2
             }
 
             string originalString = "";
-            int currIndex = endIndexOfOriginalInTransformedString;
+            int currIndex = endPositionOfOriginalInTransformedString; //in p numbers from 1
             for (int i = 0; i < transformedStringLenght; i++)
             {
                 originalString += transformedString[IndexOfElementInArray(currIndex, p)];
-                currIndex = IndexOfElementInArray(currIndex, p) + 1;
+                currIndex = IndexOfElementInArray(currIndex, p) + 1; //in p numbers from 1
             }
 
             return originalString;
