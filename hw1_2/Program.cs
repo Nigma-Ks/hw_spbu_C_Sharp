@@ -34,7 +34,7 @@ namespace hw1_2
             }
 
             Console.Write(
-                "Enter Burrows-Wheeler-transformed string (with more than 1 symbol) which you want to retransform: ");
+                $"Enter Burrows-Wheeler-transformed string (with more than 1 symbol) which you want to retransform, please do not use {(char)1} symbol: ");
             string enteredTransformedString = Console.ReadLine(); //warning fixes if I use var instead of string,
             //but after there is a checkout if string is empty
             while (string.IsNullOrWhiteSpace(enteredTransformedString) || enteredTransformedString.Length == 1)
@@ -186,6 +186,14 @@ namespace hw1_2
 
         static string BurrowsWheelerRetransform(string transformedString, int endPositionOfOriginalInTransformedString)
         {
+            //change last symbol with symbol that will indicate the end of the string because it solves problem of sort in sortedDifferentLettersInTransformedString
+            char lastSymbol =
+                transformedString[
+                    endPositionOfOriginalInTransformedString -
+                    1]; //where symbol of the end have to be in first position
+            transformedString = transformedString.Remove(endPositionOfOriginalInTransformedString - 1, 1)
+                .Insert(endPositionOfOriginalInTransformedString - 1, ((char)1).ToString());
+
             int transformedStringLenght = transformedString.Length;
             string sortedTransformedString = "";
             for (int i = 0; i < transformedStringLenght; i++)
@@ -213,8 +221,8 @@ namespace hw1_2
             }
 
             int[] p = new int[transformedStringLenght];
-            p[0] = a[uniqueLettersAndTheirAmount[0].Item2];
-            for (int i = 1; i < transformedStringLenght; i++)
+            //p[0] = a[uniqueLettersAndTheirAmount[0].Item2];
+            for (int i = 0; i < transformedStringLenght; i++)
             {
                 p[i] = a[sortedDifferentLettersInTransformedString.IndexOf(transformedString[i])];
                 a[sortedDifferentLettersInTransformedString.IndexOf(transformedString[i])]++;
@@ -222,13 +230,13 @@ namespace hw1_2
 
             string originalString = "";
             int currIndex = endPositionOfOriginalInTransformedString; //in p numbers from 1
-            for (int i = 0; i < transformedStringLenght; i++)
+            for (int i = 0; i < transformedStringLenght - 1; i++)
             {
                 originalString += transformedString[IndexOfElementInArray(currIndex, p)];
                 currIndex = IndexOfElementInArray(currIndex, p) + 1; //in p numbers from 1
             }
 
-            return originalString;
+            return originalString + lastSymbol;
         }
     }
 }
