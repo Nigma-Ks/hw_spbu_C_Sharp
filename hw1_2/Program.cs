@@ -59,7 +59,6 @@ namespace hw1_2
             string restoredString =
                 BurrowsWheelerRetransform(enteredTransformedString, positionOfLastLetterInEnteredTransformedString);
             Console.WriteLine($"Original string: {restoredString}\n");
-            return;
         }
 
         static void BubbleSortByFirstItem(ref (string, char)[] arr,
