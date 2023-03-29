@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace hw2_1
@@ -60,7 +60,7 @@ namespace hw2_1
         }
     }
 
-    class FloatStackBasedOnArray : IInterface
+    class FloatStackBasedOnArray : IStack
     {
         private const int defaultArraySize = 20;
 
@@ -68,11 +68,7 @@ namespace hw2_1
 
         private int size = 0;
 
-        public int Size
-        {
-            get { return size; }
-            private set { size = value; }
-        }
+        public int Size { get; private set; }
 
         public FloatStackBasedOnArray()
         {
@@ -117,17 +113,13 @@ namespace hw2_1
         }
     }
 
-    class FloatStackBasedOnList : IInterface
+    class FloatStackBasedOnList : IStack
     {
         private List<float> _listOfOperands;
 
         private int size = 0;
 
-        public int Size
-        {
-            get { return size; }
-            private set { size = value; }
-        }
+        public int Size { get; private set; }
 
         public FloatStackBasedOnList()
         {
@@ -157,7 +149,7 @@ namespace hw2_1
     }
 
 
-    interface IInterface
+    interface IStack
     {
         void Add(float value);
 
@@ -174,7 +166,7 @@ namespace hw2_1
                 StringSplitOptions.RemoveEmptyEntries); //if there more than one spaces
         }
 
-        public float ToCalculate(string expessionInReversePolishNotation, IInterface stack,
+        public float ToCalculate(string expessionInReversePolishNotation, IStack stack,
             out bool isCorrectExpression) //сюда очень хочется передать какой-то из двух стеков
         {
             isCorrectExpression = true;
