@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace hw2_2
@@ -171,6 +171,11 @@ namespace hw2_2
         {
             isCorrectExpression = true;
             bool stackOver;
+            if (expessionInReversePolishNotation == null)
+            {
+                isCorrectExpression = false;
+                return 0;
+            }
             string[] parsedExpression = ToParse(expessionInReversePolishNotation);
             float result;
             for (int i = 0; i < parsedExpression.Length; i++)
