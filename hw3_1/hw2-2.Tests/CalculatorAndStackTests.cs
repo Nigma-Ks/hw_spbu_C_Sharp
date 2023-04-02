@@ -5,117 +5,67 @@ namespace hw2_2.Tests;
 public class CalculatorTest
 {
     private float delta = 0.0001f;
-    FloatStackBasedOnArray arrayStack;
-    FloatStackBasedOnList listStack;
     StackCalculatorOfReversePolishNotation calculator;
     bool correctNotation;
 
     [SetUp]
     public void Initialize()
     {
-        arrayStack = new();
-        listStack = new();
         calculator = new();
     }
-
-    private (float, bool) calculateWithBothStacks(out bool areEqual, string expression)
-    {
-        bool isCorrectExpressionArrayStack;
-        bool isCorrectExpressionListStack;
-        float resultArrayStack = calculator.ToCalculate(expression, arrayStack, out isCorrectExpressionArrayStack);
-        float resultListStack = calculator.ToCalculate(expression, listStack, out isCorrectExpressionListStack);
-        if (((resultArrayStack - resultListStack) < delta) &&
-            isCorrectExpressionArrayStack == isCorrectExpressionListStack)
+    
+    private static IEnumerable<TestCaseData> Stacks
+        => new TestCaseData[]
         {
-            areEqual = true;
-            return (resultArrayStack, isCorrectExpressionArrayStack);
-        }
+            new TestCaseData(new FloatStackBasedOnArray()),
+            new TestCaseData(new FloatStackBasedOnList()),
+        };
 
-        areEqual = false;
-        return (0, false);
+    [TestCaseSource(nameof(Stacks))]
+    public void EmptyStringTest(IStack stack)
+    {
+        bool isCorrectExpression;
+        float result = calculator.ToCalculate("", stack, out isCorrectExpression);
+        Assert.IsTrue(result == 0 && !isCorrectExpression);
     }
 
-    [Test]
-    public void EmptyStringTest()
+    [TestCaseSource(nameof(Stacks))]
+    public void NullStringTest(IStack stack)
     {
-        bool isEqualResultsByStacks;
-        (float, bool) resultNumberAndCorrectness = calculateWithBothStacks(out isEqualResultsByStacks, "");
-        if (isEqualResultsByStacks)
-        {
-            Assert.IsFalse(resultNumberAndCorrectness.Item2);
-            return;
-        }
-
-        Assert.IsFalse(isEqualResultsByStacks);
+        bool isCorrectExpression;
+        float result = calculator.ToCalculate(null, stack, out isCorrectExpression);
+        Assert.IsTrue(result == 0 && !isCorrectExpression);
     }
 
-    [Test]
-    public void NullStringTest()
+    [TestCaseSource(nameof(Stacks))]
+    public void DivisionByZeroTest(IStack stack)
     {
-        bool isEqualResultsByStacks;
-        (float, bool) resultNumberAndCorrectness = calculateWithBothStacks(out isEqualResultsByStacks, null);
-        if (isEqualResultsByStacks)
-        {
-            Assert.IsFalse(resultNumberAndCorrectness.Item2);
-            return;
-        }
-
-        Assert.IsFalse(isEqualResultsByStacks);
+        bool isCorrectExpression;
+        float result = calculator.ToCalculate("9 0 /", stack, out isCorrectExpression);
+        Assert.IsTrue(result == 0 && !isCorrectExpression);
     }
 
-    [Test]
-    public void DivisionByZeroTest()
+    [TestCaseSource(nameof(Stacks))]
+    public void IncorrectExpressionTest(IStack stack)
     {
-        bool isEqualResultsByStacks;
-        (float, bool) resultNumberAndCorrectness = calculateWithBothStacks(out isEqualResultsByStacks, "9 0 /");
-        if (isEqualResultsByStacks)
-        {
-            Assert.IsFalse(resultNumberAndCorrectness.Item2);
-            return;
-        }
-
-        Assert.IsFalse(isEqualResultsByStacks);
+        bool isCorrectExpression;
+        float result = calculator.ToCalculate("9 9 / +", stack, out isCorrectExpression);
+        Assert.IsTrue(result == 0 && !isCorrectExpression);
     }
 
-    [Test]
-    public void IncorrectExpressionTest()
+    [TestCaseSource(nameof(Stacks))]
+    public void CorrectLongExpressionTest(IStack stack)
     {
-        bool isEqualResultsByStacks;
-        (float, bool) resultNumberAndCorrectness = calculateWithBothStacks(out isEqualResultsByStacks, "9 / 3");
-        if (isEqualResultsByStacks)
-        {
-            Assert.IsFalse(resultNumberAndCorrectness.Item2);
-            return;
-        }
-
-        Assert.IsFalse(isEqualResultsByStacks);
+        bool isCorrectExpression;
+        float result = calculator.ToCalculate("8 2 5 * + 1 3 2 * + 4 - /", stack, out isCorrectExpression);
+        Assert.IsTrue((result - 6f) < delta && isCorrectExpression);
     }
 
-    [Test]
-    public void CorrectLongExpressionTest()
+    [TestCaseSource(nameof(Stacks))]
+    public void CorrectShortExpressionTest(IStack stack)
     {
-        bool isEqualResultsByStacks;
-        (float, bool) resultNumberAndCorrectness = calculateWithBothStacks(out isEqualResultsByStacks, "825*+132*+4-/");
-        if (isEqualResultsByStacks)
-        {
-            Assert.IsTrue(resultNumberAndCorrectness.Item1 - 6.0f < delta);
-            return;
-        }
-
-        Assert.IsFalse(isEqualResultsByStacks);
-    }
-
-    [Test]
-    public void CorrectShortExpressionTest()
-    {
-        bool isEqualResultsByStacks;
-        (float, bool) resultNumberAndCorrectness = calculateWithBothStacks(out isEqualResultsByStacks, "2 4 8 + *");
-        if (isEqualResultsByStacks)
-        {
-            Assert.IsTrue(resultNumberAndCorrectness.Item1 - 24.0f < delta);
-            return;
-        }
-
-        Assert.IsFalse(isEqualResultsByStacks);
+        bool isCorrectExpression;
+        float result = calculator.ToCalculate("2 4 8 + *", stack, out isCorrectExpression);
+        Assert.IsTrue((result - 24f) < delta && isCorrectExpression);
     }
 }
