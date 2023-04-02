@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace hw2_1
+namespace hw2_2
 {
     class Program
     {
@@ -60,7 +60,7 @@ namespace hw2_1
         }
     }
 
-    class FloatStackBasedOnArray : IStack
+    public class FloatStackBasedOnArray : IStack
     {
         private const int defaultArraySize = 20;
 
@@ -113,7 +113,7 @@ namespace hw2_1
         }
     }
 
-    class FloatStackBasedOnList : IStack
+    public class FloatStackBasedOnList : IStack
     {
         private List<float> _listOfOperands;
 
@@ -149,16 +149,16 @@ namespace hw2_1
     }
 
 
-    interface IStack
+    public interface IStack
     {
         void Add(float value);
 
         float Remove(out bool isEmpty);
     }
 
-    class StackCalculatorOfReversePolishNotation
+    public class StackCalculatorOfReversePolishNotation
     {
-        private const float delta = 0.0001f; //null comparison precision
+        public float delta = 0.0001f; //null comparison precision
 
         private string[] ToParse(string expressionInReversePolishNotation)
         {
@@ -167,10 +167,15 @@ namespace hw2_1
         }
 
         public float ToCalculate(string expessionInReversePolishNotation, IStack stack,
-            out bool isCorrectExpression) //сюда очень хочется передать какой-то из двух стеков
+            out bool isCorrectExpression)
         {
             isCorrectExpression = true;
             bool stackOver;
+            if (expessionInReversePolishNotation == null)
+            {
+                isCorrectExpression = false;
+                return 0;
+            }
             string[] parsedExpression = ToParse(expessionInReversePolishNotation);
             float result;
             for (int i = 0; i < parsedExpression.Length; i++)
