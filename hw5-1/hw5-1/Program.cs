@@ -1,170 +1,120 @@
-﻿using System;
-using System.Collections.Generic;
-
 namespace hw5_1
 {
     class Program
     {
         static async Task Main(string[] args)
         {
+            Graph graph = new Graph();
             string originalTopologyPath;
             string optimizedTopologyPath;
             if (args.Length != 2)
             {
-                throw new IncorrectFilesException("There aren't two entered paths there are more or less");
+                throw new IncorrectFileException("There aren't two entered paths there are more or less");
             }
 
             originalTopologyPath = args[0];
             optimizedTopologyPath = args[1];
 
-            if (!File.Exists(originalTopologyPath) || IsFileNameValid(optimizedTopologyPath))
+            if (!File.Exists(originalTopologyPath))
             {
-                throw new IncorrectFilesException("Invalid paths");
+                throw new IncorrectFileException("Invalid path");
             }
-            string? topologyFromFile = "";
-            
+
+            string topologyFromFile = "";
+
             using (StreamReader reader = new StreamReader(originalTopologyPath))
             {
                 if ((topologyFromFile = await reader.ReadToEndAsync()) == null)
                 {
-                    throw new IncorrectFilesException("Empty file!");
+                    reader.Close();
+                    throw new IncorrectFileException("Empty file!");
+                }
+
+                reader.Close();
+            }
+
+            string tableOfOptimizedGraph = graph.FindMst(topologyFromFile);
+
+            if (!File.Exists(optimizedTopologyPath))
+            {
+                using (FileStream optimizedGraphFile = File.Create(optimizedTopologyPath))
+                {
+                    if (!File.Exists(optimizedTopologyPath))
+                    {
+                        Console.WriteLine("Incorrect file path!");
+                        return;
+                    }
+
+                    optimizedGraphFile.Close();
+                    StreamWriter sw = new StreamWriter(optimizedTopologyPath);
+                    sw.Write(tableOfOptimizedGraph);
+                    sw.Close();
                 }
             }
-            // Lzw lzw = new();
-            // if (argument == "-c")
-            // {
-            //     string? text = "";
-            //
-            //     using (StreamReader reader = new StreamReader(path))
-            //     {
-            //         if ((text = await reader.ReadToEndAsync()) == null)
-            //         {
-            //             Console.WriteLine("Empty file!");
-            //             return;
-            //         }
-            //     }
-            //
-            //     bool isEmpty;
-            //     List<Byte[]> listOfCodes = lzw.LzwCompression(text, out isEmpty);
-            //     if (isEmpty)
-            //     {
-            //         Console.WriteLine("Empty file!");
-            //         return;
-            //     }
-            //
-            //     string newName = path + ".zipped";
-            //     using (FileStream zippedFile = File.Create(newName))
-            //     {
-            //         if (!File.Exists(newName))
-            //         {
-            //             Console.WriteLine("Incorrect file path!");
-            //             return;
-            //         }
-            //
-            //         foreach (byte[] code in listOfCodes)
-            //         {
-            //             zippedFile.Write(code, 0, code.Length);
-            //         }
-            //     }
-            //
-            //     Console.WriteLine($"Compression ratio: {4 * listOfCodes.Count / (float)(2 * text.Length)}");
-            //     return;
-            // }
-            //
-            // if (argument == "-u")
-            // {
-            //     Byte[] allBytes;
-            //     allBytes = File.ReadAllBytes(path);
-            //     if (allBytes.Length == 0)
-            //     {
-            //         Console.WriteLine("Empty file!");
-            //         return;
-            //     }
-            //
-            //     bool isEmpty;
-            //     bool isCorrect;
-            //     string decompressedText = lzw.LzwDecompression(GroupBytesByFour(allBytes), out isEmpty, out isCorrect);
-            //     if (isEmpty)
-            //     {
-            //         Console.WriteLine("Empty file!");
-            //         return;
-            //     }
-            //
-            //     if (!isCorrect)
-            //     {
-            //         Console.WriteLine("Impossible to decompress. Wrong codes");
-            //     }
-            //
-            //     string newFileName = path.Replace(".zipped", "");
-            //
-            //     StreamWriter unzippedFileWriter = new StreamWriter(newFileName);
-            //     unzippedFileWriter.Write(decompressedText);
-            //     unzippedFileWriter.Close();
-            // }
-        }
-        static bool IsFileNameValid(string fileName)
-        {
-            if (fileName == null || fileName.Length == 0 ||fileName.IndexOfAny(Path.GetInvalidPathChars()) != -1)
-                return false;
-            try
-            {
-                var tempFileInfo = new FileInfo(fileName);
-                return true;
-            }
-            catch (NotSupportedException)
-            {
-                return false;
-            }            
         }
     }
 
-    class Graph
+    public class Graph
     {
-        private List<(int, int, int)> _edges = new(); //start, end, weight
-        private List<int[]> _vertexes = new();
+        private SortedDictionary<int, List<(int endEdge, int weight)>> _mst = new();
+        private List<(int edgeValue, int begEdge, int endEdge)> _edges = new(); //start, end, weight
+        private Dictionary<int, int> _vertexesWithColour = new();
 
         private void ChangeGraphView(string graphInString)
         {
             string[] lines = graphInString.Split('\n');
             foreach (string line in lines)
             {
-                string lineWithEdgesOfCurrVertex = GetNumberOfCurrVertex(line);
-                string[] stringEdges = lineWithEdgesOfCurrVertex.Split(',');
-                foreach (string stringEdge in stringEdges)
-                {
-                    int edgeValue;
-                    int endOfEdge = 0;
-                    try
-                    {
-                        int.TryParse(stringEdge.Substring(0, stringEdge.IndexOf('(')),
-                            out endOfEdge);
-                    }
-                    catch (ArgumentOutOfRangeException e)
-                    {
-                        throw new IncorrectFilesException("Incorrect lines with edges", e);
-                    }
-                    bool isCorrectEndOfEdgeValue = int.TryParse(stringEdge.Substring(0, stringEdge.IndexOf('(')),
-                        out endOfEdge);
-                    try
-                    {
-                        int.TryParse(stringEdge.Substring(stringEdge.IndexOf('(') + 1, stringEdge.IndexOf(')') - stringEdge.IndexOf('(') + 1),
-                            out edgeValue);
-                    }
-                    catch (ArgumentOutOfRangeException e)
-                    {
-                        throw new IncorrectFilesException("Incorrect lines with edges", e);
-                    }
-                    bool isCorrectEdgeValue = int.TryParse(stringEdge.Substring(0, stringEdge.IndexOf('(')),
-                        out endOfEdge);
-                    if (!isCorrectEdgeValue || !isCorrectEndOfEdgeValue)
-                    {
-                        throw new IncorrectFilesException("Incorrect lines with edges");
-                    }
-                }
+                int begEdge;
+                string lineWithoutBeg = GetNumberOfCurrVertex(line, out begEdge);
+                GetEdgesAndValuesFromString(lineWithoutBeg, begEdge);
             }
         }
 
-        private string GetNumberOfCurrVertex(string line)
+        private void GetEdgesAndValuesFromString(string line, int begEdge)
+        {
+            string[] stringEdges = line.Split(',');
+            foreach (string stringEdge in stringEdges)
+            {
+                int edgeValue;
+                int endOfEdge = 0;
+                try
+                {
+                    int.TryParse(stringEdge.Substring(0, stringEdge.IndexOf('(')),
+                        out endOfEdge);
+                }
+                catch (ArgumentOutOfRangeException e)
+                {
+                    throw new IncorrectFileException("Incorrect lines with edges", e);
+                }
+
+                bool isCorrectEndOfEdgeValue = int.TryParse(stringEdge.Substring(0, stringEdge.IndexOf('(')),
+                    out endOfEdge);
+                try
+                {
+                    int.TryParse(
+                        stringEdge.Substring(stringEdge.IndexOf('(') + 1,
+                            stringEdge.IndexOf(')') - stringEdge.IndexOf('(') - 1),
+                        out edgeValue);
+                }
+                catch (ArgumentOutOfRangeException e)
+                {
+                    throw new IncorrectFileException("Incorrect lines with edges", e);
+                }
+
+                bool isCorrectEdgeValue = int.TryParse(stringEdge.Substring(0, stringEdge.IndexOf('(')),
+                    out endOfEdge);
+                _vertexesWithColour.TryAdd(endOfEdge, endOfEdge);
+                if (!isCorrectEdgeValue || !isCorrectEndOfEdgeValue)
+                {
+                    throw new IncorrectFileException("Incorrect lines with edges");
+                }
+
+                _edges.Add((edgeValue, begEdge, endOfEdge));
+            }
+        }
+
+        private string GetNumberOfCurrVertex(string line, out int begEdge)
         {
             string currVertexString = "";
             bool isColonInLine = false;
@@ -181,37 +131,136 @@ namespace hw5_1
 
             if (!isColonInLine)
             {
-                throw new IncorrectFilesException("No colon");
+                throw new IncorrectFileException("No colon");
             }
+
             int currVertexInt;
             bool isNumberBeforeColon = int.TryParse(currVertexString, out currVertexInt);
             if (!isNumberBeforeColon)
             {
-                throw new IncorrectFilesException("No number before colon");
+                throw new IncorrectFileException("No number before colon");
             }
 
-            int[] vertexAndColour = new[] { currVertexInt, currVertexInt };
-
-            _vertexes.Add(vertexAndColour);
+            begEdge = currVertexInt;
+            _vertexesWithColour.TryAdd(currVertexInt, currVertexInt);
             return line.Replace(currVertexString + ':', "");
         }
-        
+
+        private void RecolourVertexes(int oldColour, int newColour)
+        {
+            foreach (var vertex in _vertexesWithColour.Keys)
+            {
+                if (_vertexesWithColour[vertex] == oldColour)
+                {
+                    _vertexesWithColour[vertex] = newColour;
+                }
+            }
+        }
+
+        private bool Merge(int begin, int end)
+        {
+            if (_vertexesWithColour[begin] != _vertexesWithColour[end])
+            {
+                RecolourVertexes(_vertexesWithColour[begin], _vertexesWithColour[end]);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void AddNewEdgeToMst((int edgeValue, int begEdge, int endEdge) edge)
+        {
+            if (edge.begEdge > edge.endEdge)
+            {
+                if (_mst.ContainsKey(edge.endEdge))
+                {
+                    _mst[edge.endEdge].Add((edge.begEdge, edge.edgeValue));
+                }
+                else
+                {
+                    List<(int, int)> relatedVertexes = new();
+                    relatedVertexes.Add((edge.begEdge, edge.edgeValue));
+                    _mst.TryAdd(edge.endEdge, relatedVertexes);
+                }
+
+                return;
+            }
+
+            if (_mst.ContainsKey(edge.begEdge))
+            {
+                _mst[edge.begEdge].Add((edge.endEdge, edge.edgeValue));
+            }
+            else
+            {
+                List<(int, int)> relatedVertexes = new();
+                relatedVertexes.Add((edge.endEdge, edge.edgeValue));
+                _mst.TryAdd(edge.begEdge, relatedVertexes);
+            }
+        }
+
+        private string GetGraphInString()
+        {
+            string graphInString = "";
+            int amountOfPairs = _mst.Count;
+            foreach (var pair in _mst)
+            {
+                pair.Value.Sort();
+                graphInString += "" + pair.Key + ": ";
+                for (int i = 0; i < pair.Value.Count; i++)
+                {
+                    string end = "" + pair.Value[i].endEdge;
+                    string weight = "" + pair.Value[i].weight;
+                    if (i != pair.Value.Count - 1)
+                    {
+                        graphInString += "" + end + " (" + weight + "), ";
+                    }
+                    else
+                    {
+                        graphInString += "" + end + " (" + weight + ")";
+                    }
+                }
+
+                graphInString += '\n';
+            }
+
+            return graphInString;
+        }
+
         public string FindMst(string graphInString)
         {
-            return "";
+            ChangeGraphView(graphInString);
+            var _sortedEdges = _edges.OrderBy(edge => -edge.edgeValue).ToArray();
+            int amountOfEdgesInMst = 0;
+            foreach (var edge in _sortedEdges)
+            {
+                if (Merge(edge.begEdge, edge.endEdge))
+                {
+                    AddNewEdgeToMst(edge);
+                    amountOfEdgesInMst += 1;
+                }
+            }
+
+            if (amountOfEdgesInMst != _vertexesWithColour.Count - 1)
+            {
+                throw new IncorrectFileException("Disconnected topology!");
+            }
+
+            string result = GetGraphInString().TrimEnd('\n');
+            return result;
         }
     }
-    public class IncorrectFilesException : ArgumentException
+
+    public class IncorrectFileException : ArgumentException
     {
-        public IncorrectFilesException()
+        public IncorrectFileException()
         {
         }
 
-        public IncorrectFilesException(string message) : base(message)
+        public IncorrectFileException(string message) : base(message)
         {
         }
 
-        public IncorrectFilesException(string message, Exception inner) : base(message, inner)
+        public IncorrectFileException(string message, Exception inner) : base(message, inner)
         {
         }
     }
