@@ -1,129 +1,104 @@
-﻿namespace hw1_2
+﻿
+
+namespace hw1_2
 {
     class Program
     {
         static void Main()
         {
             Console.Write(
-                "This program can do Burrows-Wheeler transformation and reverse transformation.\nIf you want to do first, enter '1', if second, '2': ");
-            byte choice = Convert.ToByte(Console.ReadLine());
-            while (choice != 1 && choice != 2)
+                "Эта программа преобразовывает введеную строку методом Барроуза-Уилера: \n" +
+                "выводится преобразованная строка и индекс конца строки в результате преобразования.\n\n" +
+                "Также она делает и обратное преобразование, принимающее преобразованную строку и индекс конца исходной в ней,\n" +
+                "возвращает исходную строку.\n\n");
+            Console.Write("Если вы хотите преобразовать строку методом Барроуза-Уилера, введите 1,\n" +
+                "если совершить обратное преобразование, введите 2:");
+            string? choice = Console.ReadLine();
+            byte numberInChoice;
+            bool isChoiceByteDigit = Byte.TryParse(choice, out numberInChoice);
+            while (!isChoiceByteDigit || (numberInChoice != 1 && numberInChoice != 2))
             {
                 Console.Write(
-                    "Incorrect input!\nIf you want to do Burrows-Wheeler transformation, enter '1', if reverse transformation, '2': ");
-                choice = Convert.ToByte(Console.ReadLine());
+                    "Некорректный ввод!\nЕсли вы хотите преобразовать строку методом Барроуза-Уилера, введите 1,\nесли совершить обратное преобразование, введите 2:");
+                choice = Console.ReadLine();
+                isChoiceByteDigit = Byte.TryParse(choice, out numberInChoice);
             }
 
-            if (choice == 1)
+            if (numberInChoice == 1)
             {
                 Console.Write(
-                    $"Enter string (with more than 1 symbol) which you want to transform, please do not use {(char)0} symbol: ");
-                string originalString = Console.ReadLine(); //warning fixes if I use var instead of string,
-                //but after there is a checkout if string is empty
+                    $"Введите строку, в которой больше 1 символа, для преобразования: ");
+                string? originalString = Console.ReadLine();
+
                 while (string.IsNullOrWhiteSpace(originalString) || originalString.Length == 1)
                 {
-                    Console.WriteLine("Error! You entered empty or too small string");
-                    Console.Write("Enter string which you want to transform again: ");
+                    Console.WriteLine("Введена пустая или односимвольная строка");
+                    Console.Write("Повторно введите строку, в которой больше 1 символа, для преобразования: ");
                     originalString = Console.ReadLine();
                 }
 
                 string transformedString =
                     BurrowsWheelerTransform(originalString, out int endIndexOfOriginalInTransformedString);
                 Console.WriteLine(
-                    $"Transformed string: {transformedString}\nPositionOfEnd: {endIndexOfOriginalInTransformedString + 1}\n");
+                    $"Преобразованная строка: {transformedString}\nИндекс конца строки: {endIndexOfOriginalInTransformedString}\n");
                 return;
             }
 
             Console.Write(
-                $"Enter Burrows-Wheeler-transformed string (with more than 1 symbol) which you want to retransform, please do not use {(char)0} symbol: ");
-            string enteredTransformedString = Console.ReadLine(); //warning fixes if I use var instead of string,
-            //but after there is a checkout if string is empty
+                $"Введите строку, в которой больше 1 символа, для обратного преобразования: ");
+            string? enteredTransformedString = Console.ReadLine();
             while (string.IsNullOrWhiteSpace(enteredTransformedString) || enteredTransformedString.Length == 1)
 
             {
-                Console.WriteLine("Error! You entered empty or too small string");
-                Console.Write("Enter string which you want to retransform again: ");
+                Console.WriteLine("Введена пустая или односимвольная строка");
+                Console.Write("Повторно введите строку, в которой больше 1 символа, для обратного преобразования: ");
                 enteredTransformedString = Console.ReadLine();
             }
 
-            Console.Write("Enter position (counts from 1) of the last letter in Burrows-Wheeler-transformed string: ");
+            Console.Write("Введите индекс (счет с 0) конца строки в введенной,\nпреобразованной методом Барроузом-Уилера строке: ");
             int positionOfLastLetterInEnteredTransformedString = Convert.ToInt32(Console.ReadLine());
-            while (positionOfLastLetterInEnteredTransformedString > enteredTransformedString.Length ||
-                   positionOfLastLetterInEnteredTransformedString < 1)
+            while (positionOfLastLetterInEnteredTransformedString >= enteredTransformedString.Length ||
+                   positionOfLastLetterInEnteredTransformedString < 0)
             {
-                Console.WriteLine("Error! You entered wrong position");
-                Console.Write("Enter again: ");
+                Console.WriteLine("Введенный индекс некорректен");
+                Console.Write("Введите индекс: ");
                 positionOfLastLetterInEnteredTransformedString = Convert.ToInt32(Console.ReadLine());
             }
 
             string restoredString =
                 BurrowsWheelerRetransform(enteredTransformedString, positionOfLastLetterInEnteredTransformedString);
-            Console.WriteLine($"Original string: {restoredString}\n");
-        }
-
-        static void BubbleSortByFirstItem(ref (string, char)[] arr,
-            ref int indexOfLastLetterInOriginalString)
-        {
-            int arrLength = arr.Length;
-            string suffixOfEntireString = arr[arrLength - 1].Item1; //index with end of the original string
-            (string, char) temp;
-            for (int i = 0; i < arrLength; i++)
-            {
-                for (int j = 0; j < arrLength - 1 - i; j++)
-                {
-                    if (String.Compare(arr[j].Item1, arr[j + 1].Item1) > 0)
-                    {
-                        temp = arr[j + 1];
-                        arr[j + 1] = arr[j];
-                        arr[j] = temp;
-                        if (arr[j].Item1 == suffixOfEntireString)
-                        {
-                            indexOfLastLetterInOriginalString = j;
-                        }
-
-                        if (arr[j + 1].Item1 == suffixOfEntireString)
-                        {
-                            indexOfLastLetterInOriginalString = j + 1;
-                        }
-                    }
-                }
-            }
+            Console.WriteLine($"Исходная строка: {restoredString}\n");
         }
 
         static string BurrowsWheelerTransform(string originalString, out int endIndexOfOriginalInTransformedString)
         {
             int originalStringLength = originalString.Length;
-            //changing last symbol to make sort easier
             char lastSymbol = originalString[originalStringLength - 1];
-            originalString = originalString.Remove(originalStringLength - 1, 1)
-                .Insert(originalStringLength - 1, ((char)1).ToString());
 
-            (string, char)[] arrayOfSuffixes = new (string, char)[originalStringLength];
-            string currentSuffix = "";
-
+            var arrayOfShiftsAndLastSymbols = new (string, char)[originalStringLength];
+            string currentShift = originalString;
+            string endOfCurrentShift = "";
             for (int i = 0; i < originalStringLength; i++)
             {
-                currentSuffix = originalString[originalStringLength - 1 - i] + currentSuffix;
-                arrayOfSuffixes[i] = (currentSuffix,
-                    originalString[(2 * originalStringLength - 2 - i) % originalStringLength]);
+                currentShift = originalString.Substring(i) + endOfCurrentShift;
+                endOfCurrentShift += currentShift[0];
+                arrayOfShiftsAndLastSymbols[i] = (currentShift, currentShift[originalStringLength - 1]);
             }
-
-            int indexOfLastLetterInOriginalString = originalStringLength - 1;
-            BubbleSortByFirstItem(ref arrayOfSuffixes,
-                ref indexOfLastLetterInOriginalString);
+            endIndexOfOriginalInTransformedString = originalStringLength - 1;
+            Array.Sort(arrayOfShiftsAndLastSymbols, (x, y) => x.Item1.CompareTo(y.Item1));
+            endIndexOfOriginalInTransformedString = Array.IndexOf(arrayOfShiftsAndLastSymbols, (originalString, originalString[originalStringLength - 1]));
             string transformedString = "";
-            foreach (var tuple in arrayOfSuffixes)
-                transformedString += tuple.Item2; //concatenation of sorted suffixes prior 
-            endIndexOfOriginalInTransformedString = indexOfLastLetterInOriginalString;
-            transformedString =
-                transformedString.Replace((char)1, lastSymbol); //change our convenient symbol to original
+            for (int i = 0; i < originalStringLength; i++)
+                transformedString += arrayOfShiftsAndLastSymbols[i].Item2; //concatenation of sorted shifts prior
             return transformedString;
         }
 
-        static (char, int)[] ArrayOfDifferentLettersInSortedStringWithTheirNumberInItConstructor(string sortedString,
+
+
+        static (char, int)[] ArrayOfSymbolsInSortedStringWithTheirAmount(string sortedString,
             out int currIndex)
         {
-            (char, int)[] uniqueLettersAndTheirAmount = new (char, int)[sortedString.Length];
+            var uniqueLettersAndTheirAmount = new (char, int)[sortedString.Length];
             uniqueLettersAndTheirAmount[0] = (sortedString[0], 1);
             currIndex = 0;
             for (int i = 1; i < sortedString.Length; i++)
@@ -142,14 +117,6 @@
 
         static string BurrowsWheelerRetransform(string transformedString, int endPositionOfOriginalInTransformedString)
         {
-            //change last symbol with symbol that will indicate the end of the string because it solves problem of sort in sortedDifferentLettersInTransformedString
-            char lastSymbol =
-                transformedString[
-                    endPositionOfOriginalInTransformedString -
-                    1]; //where symbol of the end have to be in first position
-            transformedString = transformedString.Remove(endPositionOfOriginalInTransformedString - 1, 1)
-                .Insert(endPositionOfOriginalInTransformedString - 1, ((char)1).ToString());
-
             int transformedStringLenght = transformedString.Length;
             string sortedTransformedString = "";
             for (int i = 0; i < transformedStringLenght; i++)
@@ -160,7 +127,7 @@
             sortedTransformedString = string.Concat(sortedTransformedString.OrderBy(x => x).ToArray());
             int lastIndexWithLetter = 0;
             (char, int)[] uniqueLettersAndTheirAmount =
-                ArrayOfDifferentLettersInSortedStringWithTheirNumberInItConstructor(sortedTransformedString,
+                ArrayOfSymbolsInSortedStringWithTheirAmount(sortedTransformedString,
                     out lastIndexWithLetter);
             string sortedDifferentLettersInTransformedString = "";
 
@@ -169,29 +136,32 @@
                 sortedDifferentLettersInTransformedString += uniqueLettersAndTheirAmount[i].Item1;
             }
 
-            int[] a = new int[lastIndexWithLetter + 1];
-            a[0] = uniqueLettersAndTheirAmount[0].Item2;
-            for (int i = 1; i <= lastIndexWithLetter; i++)
+            var firstOccuranceOfSymbolInFirstColumn = new int[lastIndexWithLetter + 1];//первый столбец отсортированной матрицы сдвигов
+            int sumOfPreviousChars = 0;
+            for (int i = 0; i <= lastIndexWithLetter; i++)
             {
-                a[i] = a[i - 1] + uniqueLettersAndTheirAmount[i - 1].Item2;
+                sumOfPreviousChars += uniqueLettersAndTheirAmount[i].Item2;
+                firstOccuranceOfSymbolInFirstColumn[i] = sumOfPreviousChars - uniqueLettersAndTheirAmount[i].Item2;
             }
 
-            int[] p = new int[transformedStringLenght];
+            var vectorOfRetransformation = new int[transformedStringLenght];
+            int indexOfSymbolInStringAlphabet;
             for (int i = 0; i < transformedStringLenght; i++)
             {
-                p[i] = a[sortedDifferentLettersInTransformedString.IndexOf(transformedString[i])];
-                a[sortedDifferentLettersInTransformedString.IndexOf(transformedString[i])]++;
+                indexOfSymbolInStringAlphabet = sortedDifferentLettersInTransformedString.IndexOf(transformedString[i]);
+                vectorOfRetransformation[firstOccuranceOfSymbolInFirstColumn[indexOfSymbolInStringAlphabet]] = i;
+                firstOccuranceOfSymbolInFirstColumn[indexOfSymbolInStringAlphabet]++;
             }
 
             string originalString = "";
-            int currIndex = endPositionOfOriginalInTransformedString; //in p numbers from 1
-            for (int i = 0; i < transformedStringLenght - 1; i++)
+            int currIndex = vectorOfRetransformation[endPositionOfOriginalInTransformedString];
+            for (int i = 0; i < transformedStringLenght; i++)
             {
-                originalString += transformedString[Array.IndexOf(p, currIndex)];
-                currIndex = Array.IndexOf(p, currIndex) + 1; //in p numbers from 1
+                originalString += transformedString[currIndex];
+                currIndex = vectorOfRetransformation[currIndex];
             }
 
-            return originalString + lastSymbol;
+            return originalString;
         }
     }
 }
