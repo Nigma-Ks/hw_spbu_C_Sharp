@@ -4,23 +4,17 @@
     {
         static void Main(string[] args)
         {
-            BorStringStorage storage = new BorStringStorage();
-            Console.WriteLine("This program creates Bor storage, you can choose one of the options:\n" +
-                              "1. Add string\n" +
-                              "2. Remove string\n" +
-                              "3. Find out how many strings are in storage\n" +
-                              "4. Find out how many strings in storage starts with your entered string\n" +
-                              "5. Find out if storage contains entered string\n" +
-                              "6. Exit\n");
-            Console.Write("write number 1, 2, 3, 4, 5 or 6: ");
-            string choice = Console.ReadLine();
+            BorStringStorage storage = new();
+            PrintStorageCommands();
+            Console.Write("Write number 1, 2, 3, 4, 5 or 6: ");
+            string? choice = Console.ReadLine();
             while (choice != "6")
             {
                 switch (choice)
                 {
                     case "1":
                         Console.Write("Enter string which you want to add: ");
-                        string stringToAdd = Console.ReadLine();
+                        string? stringToAdd = Console.ReadLine();
                         if (stringToAdd == null)
                         {
                             Console.Write("Wrong! There are no symbols! Enter string which you want to add: ");
@@ -40,7 +34,7 @@
                         break;
                     case "2":
                         Console.Write("Enter string which you want to remove: ");
-                        string stringToRemove = Console.ReadLine();
+                        string? stringToRemove = Console.ReadLine();
                         if (stringToRemove == null)
                         {
                             Console.Write("Wrong! There are no symbols! Enter string which you want to add: ");
@@ -63,7 +57,7 @@
                         break;
                     case "4":
                         Console.Write("Enter prefix: ");
-                        string prefix = Console.ReadLine();
+                        string? prefix = Console.ReadLine();
                         if (prefix == null)
                         {
                             Console.Write("Wrong! There are no symbols! Enter string which you want to add: ");
@@ -75,7 +69,7 @@
                         break;
                     case "5":
                         Console.Write("Enter string which you want check if it is in storage: ");
-                        string stringForCheckingIfItInStorage = Console.ReadLine();
+                        string? stringForCheckingIfItInStorage = Console.ReadLine();
                         if (stringForCheckingIfItInStorage == null)
                         {
                             Console.Write("Wrong! There are no symbols! Enter string which you want to add: ");
@@ -94,20 +88,25 @@
 
                         break;
                     default:
-                        Console.WriteLine("You entered something wrong!");
+                        Console.WriteLine("\nYou entered something wrong!");
                         break;
                 }
 
-                Console.WriteLine("You can choose one of the options:\n" +
+                PrintStorageCommands();
+                Console.Write("Write number 1, 2, 3, 4, 5 or 6: ");
+                choice = Console.ReadLine();
+            }
+        }
+
+        static void PrintStorageCommands()
+        {
+            Console.WriteLine("You can choose one of the options:\n" +
                                   "1. Add string\n" +
                                   "2. Remove string\n" +
                                   "3. Find out how many strings are in storage\n" +
                                   "4. Find out how many strings in storage starts with your entered string\n" +
                                   "5. Find out if storage contains entered string\n" +
                                   "6. Exit\n");
-                Console.Write("Write number 1, 2, 3, 4, 5 or 6: ");
-                choice = Console.ReadLine();
-            }
         }
     }
 
@@ -117,13 +116,13 @@
         {
             public int howManyDescendants;
             public bool isTerminal;
-            public Vertex[] arrayOfRelatedVertexes;
+            public Dictionary<char, Vertex> dictionaryOfRelatedVertexes;
 
-            public Vertex(bool isTerminal, Vertex[] arrayOfRelatedVertexes)
+            public Vertex(bool isTerminal)
             {
                 howManyDescendants = 0;
                 this.isTerminal = isTerminal;
-                this.arrayOfRelatedVertexes = arrayOfRelatedVertexes;
+                dictionaryOfRelatedVertexes = new Dictionary<char, Vertex>();
             }
         }
 
@@ -131,22 +130,16 @@
 
         public BorStringStorage()
         {
-            Vertex[] currArrayOfVertexes = new Vertex[256];
-            _root = new Vertex(false, currArrayOfVertexes);
+            _root = new Vertex(false);
         }
 
-        public int Size
-        {
-            get { return size; }
-            private set { size = value; }
-        }
+        public int Size { get; private set; } = 0;
 
         private Vertex _root;
 
         public bool Add(string element)
         {
-            bool isNewString;
-            isNewString = InsertString(_root, element); //not null because constructs with no null root
+            bool isNewString = InsertString(_root, element); //not null because constructs with no null root
             if (isNewString)
             {
                 Size = ++Size;
@@ -161,9 +154,8 @@
             Vertex currVertex = _root; //not null
             for (int i = 0; i < element.Length; i++) //element was added last vertex terminal
             {
-                int codeOfCurrentChar = (int)element[i];
                 currVertex.howManyDescendants++;
-                currVertex = currVertex.arrayOfRelatedVertexes[codeOfCurrentChar];
+                currVertex = currVertex.dictionaryOfRelatedVertexes[element[i]];
             }
 
             currVertex.howManyDescendants++;
@@ -181,8 +173,7 @@
                 }
 
                 currVertex.howManyDescendants--;
-                int codeOfCurrentChar = (int)element[i];
-                currVertex = currVertex.arrayOfRelatedVertexes[codeOfCurrentChar];
+                currVertex = currVertex.dictionaryOfRelatedVertexes[element[i]];
             }
 
             if (currVertex == null)
@@ -199,19 +190,18 @@
             Vertex currVertex = _root; //not null
             for (int i = 0; i < element.Length; i++)
             {
-                int codeOfCurrentChar = (int)element[i];
-                if (currVertex.arrayOfRelatedVertexes[codeOfCurrentChar] == null)
+                bool isTerminal = i == element.Length - 1;
+                if (currVertex.dictionaryOfRelatedVertexes[element[i]] == null)
                 {
-                    bool isTerminal = i == element.Length - 1;
-                    Vertex newVertex = new Vertex(isTerminal, new Vertex[256]);
-                    currVertex.arrayOfRelatedVertexes[codeOfCurrentChar] = newVertex;
+                    var newVertex = new Vertex(isTerminal);
+                    currVertex.dictionaryOfRelatedVertexes[element[i]] = newVertex;
                     currVertex = newVertex;
                     if (isTerminal) return true;
                 }
                 else
                 {
-                    currVertex = currVertex.arrayOfRelatedVertexes[codeOfCurrentChar];
-                    if (i == element.Length - 1)
+                    currVertex = currVertex.dictionaryOfRelatedVertexes[element[i]];
+                    if (isTerminal)
                     {
                         if (!currVertex.isTerminal)
                         {
@@ -230,13 +220,12 @@
             Vertex currVertex = _root; //not null
             for (int i = 0; i < element.Length; i++)
             {
-                int codeOfCurrentChar = (int)element[i];
-                if (currVertex.arrayOfRelatedVertexes[codeOfCurrentChar] == null)
+                if (currVertex.dictionaryOfRelatedVertexes[element[i]] == null)
                 {
                     return false;
                 }
 
-                currVertex = currVertex.arrayOfRelatedVertexes[codeOfCurrentChar];
+                currVertex = currVertex.dictionaryOfRelatedVertexes[element[i]];
             }
 
             return currVertex.isTerminal;
@@ -263,13 +252,12 @@
             {
                 for (int i = 0; i < element.Length; i++)
                 {
-                    int codeOfCurrentChar = (int)element[i];
-                    if (currVertex.arrayOfRelatedVertexes[codeOfCurrentChar] == null)
+                    if (currVertex.dictionaryOfRelatedVertexes[element[i]] == null)
                     {
                         return false;
                     }
 
-                    currVertex = currVertex.arrayOfRelatedVertexes[codeOfCurrentChar];
+                    currVertex = currVertex.dictionaryOfRelatedVertexes[element[i]];
                 }
 
                 currVertex.isTerminal = false;
@@ -281,8 +269,7 @@
                 0; //initialization to fix warning, this variety will be initialized if there is string we want to remove
             for (int i = 0; i < element.Length; i++)
             {
-                int codeOfCurrentChar = (int)element[i];
-                currVertex = currVertex.arrayOfRelatedVertexes[codeOfCurrentChar];
+                currVertex = currVertex.dictionaryOfRelatedVertexes[element[i]];
                 if (currVertex.isTerminal)
                 {
                     indexOfUniquePartOfString = i + 1;
@@ -291,7 +278,7 @@
             }
 
             if (indexOfUniquePartOfString == element.Length) return false; //no unique part
-            lastTerminalVertex.arrayOfRelatedVertexes[(int)element[indexOfUniquePartOfString]] = null;
+            lastTerminalVertex.dictionaryOfRelatedVertexes[element[indexOfUniquePartOfString]] = null;
             return true;
         }
 
@@ -301,13 +288,12 @@
             Vertex currVertex = _root; //not null
             for (int i = 0; i < prefix.Length; i++)
             {
-                int codeOfCurrentChar = (int)prefix[i];
-                if (currVertex.arrayOfRelatedVertexes[codeOfCurrentChar] == null)
+                if (currVertex.dictionaryOfRelatedVertexes[prefix[i]] == null)
                 {
                     return 0;
                 }
 
-                currVertex = currVertex.arrayOfRelatedVertexes[codeOfCurrentChar];
+                currVertex = currVertex.dictionaryOfRelatedVertexes[prefix[i]];
             }
 
             amountOfStringsWithPrefix = currVertex.howManyDescendants;
