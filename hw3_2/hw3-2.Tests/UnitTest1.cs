@@ -1,3 +1,5 @@
+using NUnit.Framework;
+
 namespace hw3_2.Tests;
 
 public class LzwTests
