@@ -25,23 +25,27 @@ namespace hw3_2
             }
         }
 
-        public List<Byte[]> LzwCompression(string? textForCompression, out bool isEmptyText)
+        public (List<Byte[]> bytesOfCompressedText, bool isEmpty) LzwCompression(string? textForCompression)
         {
             _storage = new BorStringStorage();
+            bool isEmpty = false;
             List<Byte[]> codesOfCompressedText = new();
             if (String.IsNullOrEmpty(textForCompression))
             {
-                isEmptyText = true;
-                return codesOfCompressedText;
+                isEmpty = true;
+                return (codesOfCompressedText, isEmpty);
             }
 
-            isEmptyText = false;
             AddAllSymbolsToStorage();
             int textForCompressionLenght = textForCompression.Length;
             int currentCode = 0; //0 never used because entire alphabet is already in storage
             string currentSuffix = "";
             for (int i = 0; i < textForCompressionLenght; i++)
             {
+                if (_storage.Size > 2147483647) //максимальное число int, дальше хранилище будет рабоать некорректно
+                {
+
+                }
                 currentSuffix += textForCompression[i];
                 var (isInStorage, code) = _storage.Contains(currentSuffix);
                 if (isInStorage)
@@ -66,21 +70,18 @@ namespace hw3_2
                 }
             }
 
-            return codesOfCompressedText;
+            return (codesOfCompressedText, isEmpty);
         }
 
-        public string LzwDecompression(List<Byte[]> compressedMessage, out bool isEmptyText, out bool isCorrectText)
+        public (string decompressedText, bool isEmptyText, bool isCorrectText) LzwDecompression(List<Byte[]> compressedMessage)
         {
-            isCorrectText = true;
             string decompressedText = "";
             int amountOfSuffixesInCompressedText = compressedMessage.Count;
             if (amountOfSuffixesInCompressedText == 0)
             {
-                isEmptyText = true;
-                return "";
+                return ("", true, true);
             }
 
-            isEmptyText = false;
             List<string> suffixes = new();
             string lastSuffix = ""; //unnecessary initialization
             AddAllSymbolsToList(suffixes);
@@ -107,12 +108,11 @@ namespace hw3_2
                 }
                 else
                 {
-                    isCorrectText = false;
-                    return "";
+                    return ("", false, false);
                 }
             }
 
-            return decompressedText;
+            return (decompressedText, false, true);
         }
     }
 }
