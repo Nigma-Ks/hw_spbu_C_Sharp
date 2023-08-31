@@ -45,11 +45,17 @@ namespace hw3_2
                 }
 
                 bool isEmptyText;
-                (List<Byte[]> listOfCodes, isEmptyText) = lzw.LzwCompression(text);
+                (List<Byte[]> listOfCodes, isEmptyText, bool isFileTooBig) = lzw.LzwCompression(text);
 
                 if (isEmptyText)
                 {
                     Console.WriteLine("Empty file!");
+                    return;
+                }
+
+                if (isFileTooBig)
+                {
+                    Console.WriteLine("File too big to be compressed");
                     return;
                 }
 

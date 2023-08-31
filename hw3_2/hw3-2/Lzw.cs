@@ -25,15 +25,13 @@ namespace hw3_2
             }
         }
 
-        public (List<Byte[]> bytesOfCompressedText, bool isEmpty) LzwCompression(string? textForCompression)
+        public (List<Byte[]> bytesOfCompressedText, bool isEmpty, bool isFileTooBig) LzwCompression(string? textForCompression)
         {
             _storage = new BorStringStorage();
-            bool isEmpty = false;
             List<Byte[]> codesOfCompressedText = new();
             if (String.IsNullOrEmpty(textForCompression))
             {
-                isEmpty = true;
-                return (codesOfCompressedText, isEmpty);
+                return (codesOfCompressedText, true, fa);
             }
 
             AddAllSymbolsToStorage();
@@ -44,7 +42,7 @@ namespace hw3_2
             {
                 if (_storage.Size > 2147483647) //максимальное число int, дальше хранилище будет рабоать некорректно
                 {
-
+                    return (codesOfCompressedText, false, true);
                 }
                 currentSuffix += textForCompression[i];
                 var (isInStorage, code) = _storage.Contains(currentSuffix);
@@ -70,7 +68,7 @@ namespace hw3_2
                 }
             }
 
-            return (codesOfCompressedText, isEmpty);
+            return (codesOfCompressedText, false, false);
         }
 
         public (string decompressedText, bool isEmptyText, bool isCorrectText) LzwDecompression(List<Byte[]> compressedMessage)
