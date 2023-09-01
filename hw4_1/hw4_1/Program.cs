@@ -2,52 +2,56 @@
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
-            string path = "..\\..\\..\\..\\hw4_1.txt";
+            string path = args[0];
             if (!File.Exists(path))
             {
                 Console.WriteLine("Incorrect file path!");
                 return;
             }
 
-            string expression;
-            using (StreamReader reader = new StreamReader(path))
+            string? expression = File.ReadAllText(path);
             {
-                if ((expression = await reader.ReadToEndAsync()) == null)
+                if (expression == null)
                 {
                     Console.WriteLine("Empty file!");
-                    reader.Close();
                     return;
                 }
             }
-            
+
+
             Console.WriteLine("Expression in file: " + expression);
+
+            ExpressionTree tree;
+
             try
             {
-                ExpressionTree tree = new ExpressionTree(expression);
+                tree = new ExpressionTree(expression);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 Console.WriteLine("File is incorrect!");
+                Console.WriteLine("Message: " + e.Message);
+                Console.WriteLine("StackTrace:\n" + e.StackTrace);
                 return;
             }
 
-            ExpressionTree newCorrectTree = new ExpressionTree(expression);
             Console.Write("Expression in expression tree: ");
-            newCorrectTree.PrintExpressionInTree();
+            tree.PrintExpressionInTree();
             try
             {
-                newCorrectTree.CalculateExpression();
+                tree.CalculateExpression();
             }
-            catch (DivideByZeroException e)
+            catch (Exception e)
             {
-                Console.WriteLine("\nDivision by zero!");
-                Console.WriteLine("e.StackTrace:\n" + e.StackTrace);
+                Console.WriteLine("File is incorrect!");
+                Console.WriteLine("Message: " + e.Message);
+                Console.WriteLine("StackTrace:\n" + e.StackTrace);
                 return;
             }
 
-            float result = newCorrectTree.CalculateExpression();
+            float result = tree.CalculateExpression();
             Console.WriteLine("\nResult: " + result);
             Console.WriteLine();
         }
@@ -55,67 +59,90 @@
 
     public class ExpressionTree
     {
-        private OperandVertex Root;
+        private IVertex Root;
 
+        const float accuracy = 0.001f;
         public bool IsOperator(string symbol)
         {
             return symbol == "+" || symbol == "-" || symbol == "*" || symbol == "/";
         }
 
-        public class OperationVertex
+        public interface IVertex
+        {
+            void PrintVertex();
+            float CountVertexValue();
+            string PrintedVertexString();
+        }
+
+        public class OperationVertex : IVertex
         {
             public string Operation;
-            public OperandVertex LeftOperand;
-            public OperandVertex RightOperand;
+            public IVertex LeftOperand;
+            public IVertex RightOperand;
 
-            public OperationVertex(string operation, OperandVertex left, OperandVertex right)
+            public OperationVertex(string operation, IVertex left, IVertex right)
             {
                 Operation = operation;
                 LeftOperand = left;
                 RightOperand = right;
             }
 
-            public void PrintOperator()
+            public void PrintVertex()
             {
                 Console.Write("( ");
-                LeftOperand.PrintOperand(LeftOperand);
+                LeftOperand.PrintVertex();
                 Console.Write(Operation + " ");
-                RightOperand.PrintOperand(RightOperand);
+                RightOperand.PrintVertex();
                 Console.Write(") ");
             }
-        }
 
-        public class OperandVertex
+            public string PrintedVertexString()
+            {
+                return "(" + Operation + LeftOperand.PrintedVertexString() + RightOperand.PrintedVertexString() + ")";
+            }
+            public float CountVertexValue()
+            {
+                switch (Operation)
+                {
+                    case "+":
+                        return LeftOperand.CountVertexValue() + RightOperand.CountVertexValue();
+                    case "-":
+                        return LeftOperand.CountVertexValue() - RightOperand.CountVertexValue();
+                    case "*":
+                        return LeftOperand.CountVertexValue() * RightOperand.CountVertexValue();
+                    case "/":
+                        float divider = RightOperand.CountVertexValue();
+                        if (divider < accuracy)
+                        {
+                            throw new DivideByZeroException();
+                        }
+
+                        return LeftOperand.CountVertexValue() / RightOperand.CountVertexValue();
+                    default:
+                        throw new IncorrectOperationException();
+                }
+            }
+        }
+        public class OperandVertex : IVertex
         {
             public int Value;
-            public OperationVertex? Operation;
 
             public OperandVertex(int value)
             {
                 Value = value;
-                Operation = null;
             }
 
-            public OperandVertex(OperationVertex operation)
+            public void PrintVertex()
             {
-                Operation = operation;
-                Value = 0;
+                Console.Write($"{Value} ");
             }
-
-            public void PrintOperand(OperandVertex? root)
+            public float CountVertexValue()
             {
-                if (root == null)
-                {
-                    return;
-                }
-
-                if (root.Operation != null)
-                {
-                    root.Operation.PrintOperator();
-                    return;
-                }
-
-                Console.Write($"{root.Value} ");
+                return Value;
+            }
+            public string PrintedVertexString()
+            {
+                return Value.ToString();
             }
         }
 
@@ -133,43 +160,37 @@
             {
                 throw new Exception("Empty expression", new IncorrectExpressionException());
             }
-            
+
             string[] parsedExpression =
                 expression.Split(new char[] { '(', ')', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            Stack<OperandVertex> stack = new();
+            Stack<IVertex> stack = new();
             for (int i = parsedExpression.Length - 1; i >= 0; i--)
             {
                 string operandOrOperatorInExpression = parsedExpression[i];
                 if (IsOperator(operandOrOperatorInExpression))
                 {
-                    OperandVertex left;
+                    IVertex left;
                     try
                     {
                         left = stack.Pop();
                     }
                     catch (InvalidOperationException e)
                     {
-                        Console.WriteLine("File was incorrect!");
-                        Console.WriteLine("Message: " + e.Message);
-                        Console.WriteLine("StackTrace:\n" + e.StackTrace);
-                        throw new Exception("Outer exception", e);
+                        throw new Exception("Outer Exception", e);
                     }
 
-                    OperandVertex right;
+                    IVertex right;
                     try
                     {
                         right = stack.Pop();
                     }
                     catch (InvalidOperationException e)
                     {
-                        Console.WriteLine("Message: " + e.Message);
-                        Console.WriteLine("StackTrace:\n" + e.StackTrace);
-                        throw new Exception("Outer exception", e);
+                        throw new Exception("Outer Exception", e);
                     }
 
                     OperationVertex operationVertex = new(operandOrOperatorInExpression, left, right);
-                    OperandVertex operandVertex = new(operationVertex);
-                    stack.Push(operandVertex);
+                    stack.Push(operationVertex);
                 }
                 else if (Int32.TryParse(operandOrOperatorInExpression, out currOperand))
                 {
@@ -180,22 +201,17 @@
                 {
                     WrongSymbolsInExpressionException e =
                         new WrongSymbolsInExpressionException("Incorrect numbers in file!");
-                    Console.WriteLine("Message: " + e.Message);
-                    Console.WriteLine("StackTrace:\n" + e.StackTrace);
                     throw new Exception("Outer exception", e);
                 }
             }
 
-            OperandVertex resultTree;
+            IVertex resultTree;
             try
             {
                 resultTree = stack.Pop();
             }
             catch (InvalidOperationException e)
             {
-                Console.WriteLine("File was incorrect!");
-                Console.WriteLine("Message: " + e.Message);
-                Console.WriteLine("StackTrace:\n" + e.StackTrace);
                 throw new Exception("Outer exception", e);
             }
             Root = resultTree;
@@ -209,92 +225,63 @@
 
         public void PrintExpressionInTree()
         {
-            Root.PrintOperand(Root);
+            Root.PrintVertex();
         }
 
-        private string RecursiveConstruct(OperandVertex root)
-        {
-            if (root == null)
-            {
-                return "";
-            }
-
-            if (root.Operation != null)
-            {
-                return "(" + root.Operation.Operation  + RecursiveConstruct(root.Operation.LeftOperand) + RecursiveConstruct(root.Operation.RightOperand) + ")";
-            }
-
-            return root.Value.ToString();
-        }
         private string ConstructRightBracketsExpression()
         {
-            return RecursiveConstruct(Root);
-        }
-
-        private float RecursiveCalculation(OperandVertex root)
-        {
-            if (root.Operation != null)
-            {
-                switch (root.Operation.Operation)
-                {
-                    case "+":
-                        return RecursiveCalculation(root.Operation.LeftOperand) +
-                               RecursiveCalculation(root.Operation.RightOperand);
-                    case "-":
-                        return RecursiveCalculation(root.Operation.LeftOperand) -
-                               RecursiveCalculation(root.Operation.RightOperand);
-                    case "*":
-                        return RecursiveCalculation(root.Operation.LeftOperand) *
-                               RecursiveCalculation(root.Operation.RightOperand);
-                    case "/":
-                        int? divider = root.Operation.RightOperand.Value;
-                        if (divider == 0)
-                        {
-                            throw new DivideByZeroException();
-                        }
-
-                        return RecursiveCalculation(root.Operation.LeftOperand) /
-                               RecursiveCalculation(root.Operation.RightOperand);
-                }
-            }
-
-            return (float)root.Value;
+            return Root.PrintedVertexString();
         }
 
         public float CalculateExpression()
         {
-            return RecursiveCalculation(Root);
+            return Root.CountVertexValue();
         }
     }
+}
 
 
-    public class WrongSymbolsInExpressionException : ArgumentException
+
+public class WrongSymbolsInExpressionException : ArgumentException
+{
+    public WrongSymbolsInExpressionException()
     {
-        public WrongSymbolsInExpressionException()
-        {
-        }
-
-        public WrongSymbolsInExpressionException(string message) : base(message)
-        {
-        }
-
-        public WrongSymbolsInExpressionException(string message, Exception inner) : base(message, inner)
-        {
-        }
     }
 
-    public class IncorrectExpressionException : ArgumentException
+    public WrongSymbolsInExpressionException(string message) : base(message)
     {
-        public IncorrectExpressionException()
-        {
-        }
+    }
 
-        public IncorrectExpressionException(string message) : base(message)
-        {
-        }
+    public WrongSymbolsInExpressionException(string message, Exception inner) : base(message, inner)
+    {
+    }
+}
 
-        public IncorrectExpressionException(string message, Exception inner) : base(message, inner)
-        {
-        }
+public class IncorrectExpressionException : ArgumentException
+{
+    public IncorrectExpressionException()
+    {
+    }
+
+    public IncorrectExpressionException(string message) : base(message)
+    {
+    }
+
+    public IncorrectExpressionException(string message, Exception inner) : base(message, inner)
+    {
+    }
+}
+public class IncorrectOperationException : ArgumentException
+{
+    public IncorrectOperationException()
+    {
+    }
+
+    public IncorrectOperationException(string message) : base(message)
+    {
+    }
+
+    public IncorrectOperationException(string message, Exception inner) : base(message, inner)
+    {
     }
 }
