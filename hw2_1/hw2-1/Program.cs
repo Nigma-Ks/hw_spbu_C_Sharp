@@ -126,7 +126,6 @@
             }
         }
 
-        private int size = 0;
 
         public BorStringStorage()
         {
