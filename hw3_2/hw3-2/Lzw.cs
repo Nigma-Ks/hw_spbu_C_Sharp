@@ -31,7 +31,7 @@ namespace hw3_2
             List<Byte[]> codesOfCompressedText = new();
             if (String.IsNullOrEmpty(textForCompression))
             {
-                return (codesOfCompressedText, true, fa);
+                return (codesOfCompressedText, true, false);
             }
 
             AddAllSymbolsToStorage();
