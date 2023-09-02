@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hw4-2Library", "hw4-2Library\hw4-2Library.csproj", "{EEFE437E-520E-4E3C-81DD-C5A1B5C7DBC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hw4-2Library.Tests", "hw4-2Library.Tests\hw4-2Library.Tests.csproj", "{CE86A9CC-F97E-414C-B7A9-71231C081553}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EEFE437E-520E-4E3C-81DD-C5A1B5C7DBC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEFE437E-520E-4E3C-81DD-C5A1B5C7DBC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEFE437E-520E-4E3C-81DD-C5A1B5C7DBC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEFE437E-520E-4E3C-81DD-C5A1B5C7DBC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE86A9CC-F97E-414C-B7A9-71231C081553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE86A9CC-F97E-414C-B7A9-71231C081553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE86A9CC-F97E-414C-B7A9-71231C081553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE86A9CC-F97E-414C-B7A9-71231C081553}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
