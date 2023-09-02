@@ -1,4 +1,5 @@
-﻿namespace hw6_1;
+﻿
+namespace hw6_1;
 
 public class Tests
 {
@@ -15,7 +16,7 @@ public class Tests
         => new TestCaseData[]
         {
             new TestCaseData(new Func<int, bool>(x => x % 4 == 1),
-                    new List<int>(){1, 2, -3, 4, -5}, new List<int>() {1, -3}),
+                    new List<int>(){1, 2, -3, 4, -5}, new List<int>() {1}),
             new TestCaseData(new Func<int, bool>(x => x > 6),
                 new List<int>(){11, 6, 10, 4, -5}, new List<int>() {11, 10})
         };
@@ -24,7 +25,7 @@ public class Tests
         => new TestCaseData[]
         {
             new TestCaseData( new Func<int, int, int>((x, y) =>
-                    x * y), new List<int>() {1, 2, 3, 4, 5}, 0, 120),
+                    x * y), new List<int>() {1, 2, 3, 4, 5}, 1, 120),
             new TestCaseData(new Func<int, int, int>((x, y) =>
                     x / y), new List<int>() {1, 2, 3}, 12, 2)
         };
@@ -56,15 +57,16 @@ public class Tests
         List<int> resultList= ListLambdaFunctionsApplier<int>.Filter(list, lambdaFunction);
         Assert.True(resultList != null);
         Assert.True(resultList.Count == correctList.Count);
-        for (int i = 0; i < list.Count; i++)
+        for (int i = 0; i < resultList.Count; i++)
         {
-            Assert.True(list[i] == correctList[i]);
+            Assert.True(resultList[i] == correctList[i]);
         }
     }
 
     [TestCaseSource(nameof(ForFoldTest))]
     public void TestFold(Func<int, int, int> lambdaFunction, List<int> list, int initialValue, int correctAnswer)
     {
-        Assert.True(ListLambdaFunctionsApplier<int>.Fold(list, initialValue, lambdaFunction) == correctAnswer);
+        int answer = ListLambdaFunctionsApplier<int>.Fold(list, initialValue, lambdaFunction);
+        Assert.True(answer == correctAnswer);
     }
 }
