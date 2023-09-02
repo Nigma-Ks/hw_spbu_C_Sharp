@@ -133,3 +133,4 @@ $RECYCLE.BIN/
 _NCrunch*
 
 .vs
+.DS_Store
