@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hw5-1", "hw5-1\hw5-1.csproj", "{3283D2A6-3884-45E4-9B65-56CCB035929A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hw5-1.tests", "hw5-1.tests\hw5-1.tests.csproj", "{779FF5BE-CC60-4B38-AAFC-A2A9E33D7908}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3283D2A6-3884-45E4-9B65-56CCB035929A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3283D2A6-3884-45E4-9B65-56CCB035929A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3283D2A6-3884-45E4-9B65-56CCB035929A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3283D2A6-3884-45E4-9B65-56CCB035929A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{779FF5BE-CC60-4B38-AAFC-A2A9E33D7908}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{779FF5BE-CC60-4B38-AAFC-A2A9E33D7908}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{779FF5BE-CC60-4B38-AAFC-A2A9E33D7908}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{779FF5BE-CC60-4B38-AAFC-A2A9E33D7908}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
