@@ -50,6 +50,11 @@
                 }
             }
 
+            if (amountOfCharectersOnMap != 1)
+            {
+                throw new ArgumentException("Map has no character");
+            }
+
             if (!isMapLimited())
             {
                 throw new ArgumentException("Map isn't limited!");

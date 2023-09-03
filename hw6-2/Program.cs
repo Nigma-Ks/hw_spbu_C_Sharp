@@ -6,7 +6,7 @@ namespace hw6_2
         static void Main(string[] args)
         {
             string path = args[0];
-            //string path = "//Users//nigmatulinakseniya//Downloads//Map.txt";
+            //string path = "..//..//..//..//hw6-2.Tests//Test map.txt";
             if (!File.Exists(path))
             {
                 Console.WriteLine("Incorrect file path!");
